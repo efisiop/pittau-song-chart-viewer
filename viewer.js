@@ -72,14 +72,34 @@
     [...instruments].sort().forEach(value => { const option = node('option', '', value); option.value = value; $('instrument').append(option); });
     $('instrumentWrap').hidden = state.view !== 'specialist' || instruments.size === 0;
   }
-  function positionedEvents(container, events, beats, className) {
+  function positionedEvents(container, events, beats, className, columns = 2) {
     if (!Array.isArray(events)) return;
-    for (const event of events) {
+    const isLyric = className === 'lyric-event' || className === 'backing-event';
+    const words = isLyric ? events.reduce((out, event) => {
+      if (!event || typeof event.text !== 'string') return out;
+      const previous = out.at(-1);
+      if (previous && previous.continues) { previous.text += event.text.replace(/-/g, '').trim(); previous.continues = /-$/.test(event.text); }
+      else out.push({ text: event.text.replace(/-/g, ''), onset: event.onset, continues: /-$/.test(event.text) });
+      return out;
+    }, []) : events;
+    let arranged = words;
+    if (isLyric && words.length) {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      const fontPx = className === 'backing-event' ? 10.7 : 11.5;
+      context.font = `500 ${fontPx}px Arial`;
+      const widthPx = (182 / columns - (columns - 1) * 3.7 / columns - 1) * 96 / 25.4;
+      const width = (value, scale = 1) => context.measureText(value).width * scale / widthPx * 100;
+      const fit = Views.singleLineLayout(words, (value, scale) => width(value, scale), { beats, wordGap: width(' '), minScale: .92 });
+      arranged = fit.events;
+    }
+    for (const event of arranged) {
       if (!event || typeof event.text !== 'string') continue;
       const onset = event.onset;
       const beat = onset && number(onset.denominator, 0) > 0 ? number(onset.numerator, 0) / number(onset.denominator, 1) : 0;
       const span = node('span', `event ${className}${/^_+$/.test(event.text) ? ' continuation' : ''}`, event.text.replace(/-/g, ''));
-      span.style.setProperty('--left', `${Math.max(0, Math.min(97, beat / beats * 100))}%`);
+      span.style.setProperty('--left', `${Math.max(0, Math.min(97, event.displayLeftPercent ?? beat / beats * 100))}%`);
+      if (isLyric) span.style.setProperty('--top', `${Math.max(0, event.track || 0) * 4.8}mm`);
       container.append(span);
     }
   }
@@ -93,6 +113,17 @@
     measure.addEventListener('click', seek);
     measure.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); seek(); } });
     measure.append(node('span', 'measure-number', `${section.approximate ? '≈' : ''}${numberInSong}`));
+    const ruler = node('div', 'beat-ruler');
+    ruler.setAttribute('aria-hidden', 'true');
+    // One tick at each quarter-note boundary, including both ends of the bar.
+    // Positions are percentages of the same ruler width, so every full quarter
+    // occupies exactly the same visual distance at any screen or print size.
+    for (let beat = 0; beat <= Math.ceil(beats); beat++) {
+      const tick = node('i', 'beat-tick');
+      tick.style.left = `${Math.min(100, beat / beats * 100)}%`;
+      ruler.append(tick);
+    }
+    measure.append(ruler);
     const chords = node('div', 'chords');
     if (viewHas('chords')) {
       const events = section.chordEvents?.[index];
@@ -103,7 +134,7 @@
     if (viewHas('lyrics')) {
       const lyrics = node('div', 'lyrics');
       const events = section.lyricEvents?.[index];
-      if (Array.isArray(events) && events.length) positionedEvents(lyrics, events, beats, 'lyric-event');
+      if (Array.isArray(events) && events.length) positionedEvents(lyrics, events, beats, 'lyric-event', Number(row.style.getPropertyValue('--columns')) || 2);
       else lyrics.textContent = section.lyrics?.[index] || '';
       measure.append(lyrics);
     }
