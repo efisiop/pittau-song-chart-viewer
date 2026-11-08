@@ -2,6 +2,7 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const Views = window.ChartMusicianViews;
+  const Rhythm = window.ChartRhythmNotation;
   const state = { chart: null, view: 'vocal', theme: '2', active: 1, loading: 0 };
   const player = window.SongChartPractice.create({
     onBeat: position => { state.active = position.measure; showPosition(position); highlight(); },
@@ -20,6 +21,18 @@
   const meterBeats = chart => Math.max(1, Math.min(16, window.SongChartPractice.parseMeter(chart.meter)));
   const barCount = chart => chart.sections.reduce((sum, section) => sum + Math.max(0, number(section.bars, section.chords?.length || section.lyricEvents?.length || 0)), 0);
   const viewHas = key => !!Views.viewOptions(state.view)[key];
+  const notationImage = snippet => {
+    const rhythm = Rhythm.normalize(snippet.rhythm);
+    if (!rhythm || rhythm.display === 'source') return null;
+    const beats = Views.meterInfo(state.chart.meter).quarterBeats || 4;
+    const svg = ['staff', 'tab', 'both'].includes(rhythm.display)
+      ? Rhythm.guitarSvg(rhythm.events, beats, rhythm.display)
+      : Rhythm.svg(rhythm.events, beats, rhythm.head, false);
+    const img = node('img', 'snippet');
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    img.alt = snippet.title || 'Edited notation';
+    return img;
+  };
 
   function showPosition(position) {
     $('position').textContent = `Measure ${position.measure} · Beat ${position.beat}`;
@@ -145,7 +158,7 @@
     }
     if (viewHas('snippets')) {
       const snippet = section.scoreSnippets?.find(item => item.inline && number(item.startBar, 0) === index + 1 && number(item.endBar, 0) === index + 1 && (!$('instrument').value || !item.instrument || item.instrument === $('instrument').value));
-      if (snippet && /^data:image\/(png|jpeg|webp);base64,/.test(snippet.image || '')) { const img = node('img', 'snippet'); img.src = snippet.image; img.alt = snippet.title || 'Score snippet'; measure.append(img); }
+      if (snippet) { const img = notationImage(snippet); if (img) measure.append(img); }
     }
     row.append(measure);
   }
@@ -181,11 +194,11 @@
         container.append(row);
       }
       if (viewHas('snippets')) for (const snippet of section.scoreSnippets || []) {
-        if (snippet.inline || !/^data:image\/(png|jpeg|webp);base64,/.test(snippet.image || '')) continue;
+        if (snippet.inline) continue;
         if ($('instrument').value && snippet.instrument && snippet.instrument !== $('instrument').value) continue;
         const block = node('div', 'snippet-block');
         block.append(node('strong', '', snippet.title || 'Score snippet'));
-        const img = node('img'); img.src = snippet.image; img.alt = snippet.title || 'Score snippet'; block.append(img);
+        const img = notationImage(snippet); if (!img) continue; block.append(img);
         if (snippet.caption) block.append(node('p', '', snippet.caption));
         container.append(block);
       }

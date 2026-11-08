@@ -15,15 +15,15 @@
       <select id="songSelect"><option value="">Empty chart</option></select>
     </div>
   </header>
+  <section class="controls" aria-label="Chart viewing controls">
+    <label>Output theme <select id="theme"><option value="2">Calm Grid</option><option value="1">Stage Large</option><option value="4">Four measures per row</option></select></label>
+    <label>Musician view <select id="view"><option value="vocal">Vocal · lyrics</option><option value="pianoBacking">BV1 · lead cues</option><option value="piano">Piano · chords + lyrics</option><option value="instrumental">Instrumental · chords</option><option value="specialist">Specialist · chords + edited notation</option></select></label>
+    <label id="instrumentWrap" hidden>Instrument <select id="instrument"><option value="">All instruments</option></select></label>
+    <label>Zoom <input id="zoom" type="range" min="65" max="130" value="100"><output id="zoomValue">100%</output></label>
+    <button id="print" type="button">Print / PDF</button>
+  </section>
   <main>
-    <aside class="sidebar" aria-label="Chart controls">
-    <section class="controls" aria-label="Chart viewing controls">
-      <label>Output theme <select id="theme"><option value="2">Calm Grid</option><option value="1">Stage Large</option><option value="4">Four measures per row</option></select></label>
-      <label>Musician view <select id="view"><option value="vocal">Vocal · lyrics</option><option value="pianoBacking">BV1 · lead cues</option><option value="piano">Piano · chords + lyrics</option><option value="instrumental">Instrumental · chords</option><option value="specialist">Specialist · chords + score snippets</option></select></label>
-      <label id="instrumentWrap" hidden>Instrument <select id="instrument"><option value="">All instruments</option></select></label>
-      <label>Zoom <input id="zoom" type="range" min="65" max="130" value="100"><output id="zoomValue">100%</output></label>
-      <button id="print" type="button">Print / PDF</button>
-    </section>
+    <aside class="sidebar" aria-label="Practice controls">
     <section class="practice" aria-label="Practice mode">
       <div class="practice-label"><span class="eyebrow">PRACTICE MODE</span><strong id="position">Measure 1 · Beat 1</strong></div>
       <button id="play" type="button" disabled>▶ Start</button>
