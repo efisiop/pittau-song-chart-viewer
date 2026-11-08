@@ -227,7 +227,7 @@
     if (!file) { clearChart(); return; }
     $('message').textContent = 'Loading chart…';
     try {
-      const response = await fetch(file);
+      const response = await fetch(file, { cache: 'no-cache' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const chart = await response.json();
       if (request === state.loading) prepareChart(chart, 'published chart');
