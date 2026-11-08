@@ -242,6 +242,12 @@
   $('tempo').addEventListener('change', () => { player.setTempo($('tempo').value); $('tempo').value = player.getState().bpm; });
   $('metronome').addEventListener('change', () => player.setMetronome($('metronome').checked));
   $('print').addEventListener('click', () => { player.pause(); window.print(); });
+  $('practiceToggle').addEventListener('click', () => {
+    const collapsed = document.body.classList.toggle('practice-collapsed');
+    $('practicePanel').hidden = collapsed;
+    $('practiceToggle').textContent = collapsed ? 'Show practice' : 'Hide practice';
+    $('practiceToggle').setAttribute('aria-expanded', String(!collapsed));
+  });
   clearChart();
   loadCatalog();
 })();

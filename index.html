@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#142b32">
   <title>PITTAU Song Charts</title>
-  <link rel="stylesheet" href="viewer.css?v=2">
+  <link rel="stylesheet" href="viewer.css?v=3">
 </head>
 <body>
   <header class="site-header">
@@ -24,7 +24,8 @@
   </section>
   <main>
     <aside class="sidebar" aria-label="Practice controls">
-    <section class="practice" aria-label="Practice mode">
+    <button id="practiceToggle" class="practice-toggle" type="button" aria-controls="practicePanel" aria-expanded="true">Hide practice</button>
+    <section id="practicePanel" class="practice" aria-label="Practice mode">
       <div class="practice-label"><span class="eyebrow">PRACTICE MODE</span><strong id="position">Measure 1 · Beat 1</strong></div>
       <button id="play" type="button" disabled>▶ Start</button>
       <button id="reset" type="button" disabled>↺ Reset</button>
@@ -41,6 +42,6 @@
   <script src="rhythm-notation.js"></script>
   <script src="musician-views.js"></script>
   <script src="practice-player.js"></script>
-  <script src="viewer.js?v=2"></script>
+  <script src="viewer.js?v=3"></script>
 </body>
 </html>
