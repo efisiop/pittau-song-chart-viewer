@@ -13,12 +13,10 @@
     <div class="source-controls">
       <label for="songSelect">Choose a song</label>
       <select id="songSelect"><option value="">Empty chart</option></select>
-      <span class="or">or</span>
-      <label class="file-button" for="localFile">Open my JSON</label>
-      <input id="localFile" type="file" accept=".json,application/json">
     </div>
   </header>
   <main>
+    <aside class="sidebar" aria-label="Chart controls">
     <section class="controls" aria-label="Chart viewing controls">
       <label>Output theme <select id="theme"><option value="2">Calm Grid</option><option value="1">Stage Large</option><option value="4">Four measures per row</option></select></label>
       <label>Musician view <select id="view"><option value="vocal">Vocal · lyrics</option><option value="pianoBacking">BV1 · lead cues</option><option value="piano">Piano · chords + lyrics</option><option value="instrumental">Instrumental · chords</option><option value="specialist">Specialist · chords + score snippets</option></select></label>
@@ -34,8 +32,11 @@
       <label><input id="metronome" type="checkbox" checked disabled> Metronome</label>
       <span class="practice-hint">Click a measure to start there.</span>
     </section>
-    <p id="message" role="status" aria-live="polite">Choose a song or open a JSON file to begin.</p>
-    <div id="chart" class="chart" aria-label="Song chart"></div>
+    </aside>
+    <div class="score-column">
+      <p id="message" role="status" aria-live="polite">Choose a song to begin.</p>
+      <div id="chart" class="chart" aria-label="Song chart"></div>
+    </div>
   </main>
   <script src="rhythm-notation.js"></script>
   <script src="musician-views.js"></script>

@@ -32,13 +32,13 @@
       if (scroll) measure.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
   }
-  function clearChart(message = 'Choose a song or open a JSON file to begin.') {
+  function clearChart(message = 'Choose a song to begin.') {
     player.pause();
     state.chart = null;
     state.active = 1;
     $('chart').replaceChildren();
     $('chart').append(node('div', 'empty'));
-    $('chart').firstChild.append(node('h2', '', 'Your chart begins here'), node('p', '', 'Choose a published song above, or open a chart JSON from your device.'));
+    $('chart').firstChild.append(node('h2', '', 'Your chart begins here'), node('p', '', 'Choose a song above to view its chart.'));
     $('message').textContent = message;
     document.body.classList.remove('loaded');
     for (const id of ['play', 'reset', 'tempo', 'metronome', 'view', 'theme', 'print']) $(id).disabled = true;
@@ -219,15 +219,6 @@
       const chart = await response.json();
       if (request === state.loading) prepareChart(chart, 'published chart');
     } catch (error) { if (request === state.loading) clearChart(`Could not load this chart: ${error.message}`); }
-  });
-  $('localFile').addEventListener('change', async event => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    ++state.loading;
-    $('songSelect').value = '';
-    try { prepareChart(JSON.parse(await file.text()), `local file: ${file.name}`); }
-    catch (error) { clearChart(`Could not open the JSON: ${error.message}`); }
-    event.target.value = '';
   });
   $('view').addEventListener('change', () => { state.view = Views.normalizeView($('view').value); player.pause(); updateInstruments(); render(); });
   $('theme').addEventListener('change', () => { state.theme = $('theme').value; render(); });
