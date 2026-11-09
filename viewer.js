@@ -134,7 +134,7 @@
       const onset = event.onset;
       const beat = onset && number(onset.denominator, 0) > 0 ? number(onset.numerator, 0) / number(onset.denominator, 1) : 0;
       const span = node('span', `event ${className}${/^_+$/.test(event.text) ? ' continuation' : ''}`, event.text.replace(/-/g, ''));
-      const left = window.matchMedia('(max-width: 600px)').matches && isLyric ? beat / beats * 100 : event.displayLeftPercent ?? beat / beats * 100;
+      const left = event.displayLeftPercent ?? beat / beats * 100;
       span.style.setProperty('--left', `${Math.max(0, Math.min(97, left))}%`);
       if (isLyric) span.style.setProperty('--top', `${Math.max(0, event.track || 0) * 4.8}mm`);
       container.append(span);
@@ -143,11 +143,31 @@
   function layoutMobileEvents() {
     if (!window.matchMedia('(max-width: 600px)').matches) return;
     for (const container of document.querySelectorAll('.lyrics, .backing')) {
+      const spans = [...container.querySelectorAll('.event')];
+      if (!spans.length) continue;
+      const available = container.clientWidth;
+      const gap = 5;
+      for (const span of spans) { span.style.left = ''; span.style.top = '0px'; }
+      const widths = spans.map(span => span.getBoundingClientRect().width);
+      const preferred = spans.map(span => parseFloat(span.style.getPropertyValue('--left')) / 100 * available);
+      const required = widths.reduce((sum, width) => sum + width, 0) + gap * (spans.length - 1);
+      if (required <= available) {
+        // Keep the desktop's relative whitespace while fitting the larger phone text.
+        const spaces = preferred.map((left, index) => index ? Math.max(0, left - preferred[index - 1] - widths[index - 1]) : Math.max(0, left));
+        spaces.push(Math.max(0, available - preferred.at(-1) - widths.at(-1)));
+        const free = available - required;
+        const totalSpace = spaces.reduce((sum, value) => sum + value, 0);
+        let x = totalSpace ? free * spaces[0] / totalSpace : 0;
+        spans.forEach((span, index) => {
+          if (index) x += widths[index - 1] + gap + (totalSpace ? free * spaces[index] / totalSpace : 0);
+          span.style.left = `${x}px`;
+        });
+        container.style.height = `${Math.max(25, ...spans.map(span => span.getBoundingClientRect().height))}px`;
+        continue;
+      }
       const lanes = [];
       const laneHeights = [];
-      const spans = [...container.querySelectorAll('.event')];
       for (const span of spans) {
-        span.style.top = '0px';
         const box = span.getBoundingClientRect();
         const left = span.offsetLeft;
         const right = left + box.width;
@@ -195,7 +215,7 @@
     if (viewHas('lyrics')) {
       const lyrics = node('div', 'lyrics');
       const events = section.lyricEvents?.[index];
-      if (Array.isArray(events) && events.length) positionedEvents(lyrics, events, beats, 'lyric-event', Number(row.style.getPropertyValue('--columns')) || 2);
+      if (Array.isArray(events) && events.length) positionedEvents(lyrics, events, beats, 'lyric-event', window.matchMedia('(max-width: 600px)').matches ? 2 : Number(row.style.getPropertyValue('--columns')) || 2);
       else lyrics.textContent = section.lyrics?.[index] || '';
       measure.append(lyrics);
     }
