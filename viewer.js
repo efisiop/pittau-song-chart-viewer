@@ -248,6 +248,11 @@
     $('practiceToggle').textContent = collapsed ? 'Show practice' : 'Hide practice';
     $('practiceToggle').setAttribute('aria-expanded', String(!collapsed));
   });
+  $('settingsToggle').addEventListener('click', () => {
+    const collapsed = $('settingsPanel').hidden = !$('settingsPanel').hidden;
+    $('settingsToggle').textContent = collapsed ? 'Show viewing settings' : 'Hide viewing settings';
+    $('settingsToggle').setAttribute('aria-expanded', String(!collapsed));
+  });
   window.matchMedia('(max-width: 600px)').addEventListener('change', () => { if (state.chart) render(); });
   clearChart();
   loadCatalog();
