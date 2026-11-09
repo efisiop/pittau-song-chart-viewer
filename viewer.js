@@ -4,6 +4,29 @@
   const Views = window.ChartMusicianViews;
   const Rhythm = window.ChartRhythmNotation;
   const state = { chart: null, view: 'vocal', theme: '2', active: 1, loading: 0 };
+  const spotifyByFile = new Map();
+  async function updateSpotify(file) {
+    const item = spotifyByFile.get(file);
+    const link = $('spotifyLink');
+    link.hidden = !item;
+    if (!item) return;
+    const url = `https://open.spotify.com/track/${item.spotifyTrack}`;
+    link.href = url;
+    link.setAttribute('aria-label', `Listen to ${item.title} by ${item.artist} on Spotify`);
+    $('spotifySong').textContent = `${item.artist} · ${item.title}`;
+    $('spotifyCover').hidden = true;
+    $('spotifyFallback').hidden = false;
+    try {
+      const response = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`);
+      if (!response.ok) return;
+      const data = await response.json();
+      if ($('songSelect').value !== file || !data.thumbnail_url) return;
+      $('spotifyCover').src = data.thumbnail_url;
+      $('spotifyCover').alt = `${item.title} cover art`;
+      $('spotifyCover').hidden = false;
+      $('spotifyFallback').hidden = true;
+    } catch { /* The Spotify link remains available when artwork cannot load. */ }
+  }
   const player = window.SongChartPractice.create({
     onBeat: position => { state.active = position.measure; showPosition(position); highlight(); },
     onPosition: position => { state.active = position.measure; showPosition(position); highlight(true); },
@@ -218,11 +241,13 @@
         const option = node('option', '', `${item.artist} — ${item.title}`);
         option.value = item.file;
         $('songSelect').append(option);
+        if (/^[A-Za-z0-9]{22}$/.test(item.spotifyTrack || '')) spotifyByFile.set(item.file, item);
       }
     } catch (error) { $('message').textContent = `The song list could not load: ${error.message}`; }
   }
   $('songSelect').addEventListener('change', async event => {
     const file = event.target.value;
+    updateSpotify(file);
     const request = ++state.loading;
     if (!file) { clearChart(); return; }
     $('message').textContent = 'Loading chart…';

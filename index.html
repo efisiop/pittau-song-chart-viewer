@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#142b32">
   <title>PITTAU Song Charts</title>
-  <link rel="stylesheet" href="viewer.css?v=6">
+  <link rel="stylesheet" href="viewer.css?v=7">
 </head>
 <body>
   <header class="site-header">
     <div class="brand"><span class="eyebrow">PITTAU SYSTEM</span><h1>Song Charts</h1><span class="subtitle">Rehearsal viewer</span></div>
+    <a id="spotifyLink" class="spotify-link" href="#" target="_blank" rel="noopener noreferrer" hidden><img id="spotifyCover" alt="" hidden><span id="spotifyFallback" aria-hidden="true">♫</span><span><strong>Listen on Spotify</strong><small id="spotifySong"></small></span></a>
     <div class="source-controls">
       <label for="songSelect">Choose a song</label>
       <select id="songSelect"><option value="">Empty chart</option></select>
@@ -45,6 +46,6 @@
   <script src="rhythm-notation.js"></script>
   <script src="musician-views.js"></script>
   <script src="practice-player.js"></script>
-  <script src="viewer.js?v=5"></script>
+  <script src="viewer.js?v=6"></script>
 </body>
 </html>

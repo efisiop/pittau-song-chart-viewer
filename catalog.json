@@ -3,36 +3,42 @@
     "id": "01",
     "title": "Yesterday",
     "artist": "The Beatles",
-    "file": "songs/01.json"
+    "file": "songs/01.json",
+    "spotifyTrack": "3BQHpFgAp4l80e1XslIjNI"
   },
   {
     "id": "02",
     "title": "I Will Survive",
     "artist": "Gloria Gaynor",
-    "file": "songs/02.json"
+    "file": "songs/02.json",
+    "spotifyTrack": "1IIEW4UHUiuKDSSEq3aFeJ"
   },
   {
     "id": "03",
     "title": "Beggin'",
     "artist": "Måneskin",
-    "file": "songs/03.json"
+    "file": "songs/03.json",
+    "spotifyTrack": "3Wrjm47oTz2sjIgck11l5e"
   },
   {
     "id": "04",
     "title": "The Fate of Ophelia",
     "artist": "Taylor Swift",
-    "file": "songs/04.json"
+    "file": "songs/04.json",
+    "spotifyTrack": "53iuhJlwXhSER5J2IYYv1W"
   },
   {
     "id": "05",
     "title": "Hung Up",
     "artist": "Madonna",
-    "file": "songs/05.json"
+    "file": "songs/05.json",
+    "spotifyTrack": "70VjMtwhm3Q2HBQeJnPfmh"
   },
   {
     "id": "06",
     "title": "Late Night Talking",
     "artist": "Harry Styles",
-    "file": "songs/06.json"
+    "file": "songs/06.json",
+    "spotifyTrack": "1qEmFfgcLObUfQm0j1W2CK"
   }
 ]
