@@ -134,9 +134,34 @@
       const onset = event.onset;
       const beat = onset && number(onset.denominator, 0) > 0 ? number(onset.numerator, 0) / number(onset.denominator, 1) : 0;
       const span = node('span', `event ${className}${/^_+$/.test(event.text) ? ' continuation' : ''}`, event.text.replace(/-/g, ''));
-      span.style.setProperty('--left', `${Math.max(0, Math.min(97, event.displayLeftPercent ?? beat / beats * 100))}%`);
+      const left = window.matchMedia('(max-width: 600px)').matches && isLyric ? beat / beats * 100 : event.displayLeftPercent ?? beat / beats * 100;
+      span.style.setProperty('--left', `${Math.max(0, Math.min(97, left))}%`);
       if (isLyric) span.style.setProperty('--top', `${Math.max(0, event.track || 0) * 4.8}mm`);
       container.append(span);
+    }
+  }
+  function layoutMobileEvents() {
+    if (!window.matchMedia('(max-width: 600px)').matches) return;
+    for (const container of document.querySelectorAll('.lyrics, .backing')) {
+      const lanes = [];
+      const laneHeights = [];
+      const spans = [...container.querySelectorAll('.event')];
+      for (const span of spans) {
+        span.style.top = '0px';
+        const box = span.getBoundingClientRect();
+        const left = span.offsetLeft;
+        const right = left + box.width;
+        let lane = lanes.findIndex(end => left >= end + 5);
+        if (lane < 0) lane = lanes.length;
+        lanes[lane] = right;
+        laneHeights[lane] = Math.max(laneHeights[lane] || 0, box.height + 3);
+        span.dataset.lane = String(lane);
+      }
+      const laneTops = laneHeights.map((_, lane) => laneHeights.slice(0, lane).reduce((sum, height) => sum + height, 0));
+      for (const span of spans) {
+        span.style.top = `${laneTops[Number(span.dataset.lane)] || 0}px`;
+      }
+      container.style.height = `${Math.max(25, spans.reduce((height, span) => Math.max(height, span.offsetTop + span.getBoundingClientRect().height), 0))}px`;
     }
   }
   function addMeasure(row, section, index, numberInSong, beats) {
@@ -228,6 +253,7 @@
       page.append(container);
     }
     output.append(page);
+    layoutMobileEvents();
     highlight();
   }
   async function loadCatalog() {
@@ -279,6 +305,7 @@
     $('settingsToggle').setAttribute('aria-expanded', String(!collapsed));
   });
   window.matchMedia('(max-width: 600px)').addEventListener('change', () => { if (state.chart) render(); });
+  window.addEventListener('resize', () => { if (state.chart) layoutMobileEvents(); });
   clearChart();
   loadCatalog();
 })();
