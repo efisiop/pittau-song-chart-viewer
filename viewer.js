@@ -177,7 +177,7 @@
     head.append(title, meta);
     page.append(head);
     const beats = Views.meterInfo(chart.meter).quarterBeats || 4;
-    const columns = state.theme === '1' ? 1 : state.theme === '4' && ['instrumental', 'specialist'].includes(state.view) ? 4 : 2;
+    const columns = window.matchMedia('(max-width: 600px)').matches ? 1 : state.theme === '1' ? 1 : state.theme === '4' && ['instrumental', 'specialist'].includes(state.view) ? 4 : 2;
     let n = 1;
     for (const section of chart.sections) {
       const count = Math.max(0, number(section.bars, section.chords?.length || section.lyricEvents?.length || 0));
@@ -248,6 +248,7 @@
     $('practiceToggle').textContent = collapsed ? 'Show practice' : 'Hide practice';
     $('practiceToggle').setAttribute('aria-expanded', String(!collapsed));
   });
+  window.matchMedia('(max-width: 600px)').addEventListener('change', () => { if (state.chart) render(); });
   clearChart();
   loadCatalog();
 })();
