@@ -3,7 +3,7 @@
   const $ = id => document.getElementById(id);
   const Views = window.ChartMusicianViews;
   const Rhythm = window.ChartRhythmNotation;
-  const state = { chart: null, view: 'vocal', theme: '2', active: 1, loading: 0 };
+  const state = { chart: null, view: 'vocal', theme: '2', active: 1, loading: 0, scrolledMeasure: null };
   const spotifyByFile = new Map();
   async function updateSpotify(file) {
     const item = spotifyByFile.get(file);
@@ -30,7 +30,7 @@
   const player = window.SongChartPractice.create({
     onBeat: position => { state.active = position.measure; showPosition(position); highlight(); },
     onPosition: position => { state.active = position.measure; showPosition(position); highlight(true); },
-    onState: current => { $('play').textContent = current.playing ? '❚❚ Pause' : '▶ Start'; }
+    onState: current => { $('play').textContent = current.playing ? '❚❚ Pause' : '▶ Start'; if (current.playing) highlight(true); else state.scrolledMeasure = null; }
   });
 
   const node = (tag, className, text) => {
@@ -65,7 +65,11 @@
     const measure = document.querySelector(`.measure[data-number="${state.active}"]`);
     if (measure) {
       measure.classList.add('active');
-      if (scroll) measure.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      const mobilePlaying = window.matchMedia('(max-width: 600px)').matches && player.getState().playing;
+      if (mobilePlaying && state.scrolledMeasure !== state.active) {
+        state.scrolledMeasure = state.active;
+        measure.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      } else if (scroll && !mobilePlaying) measure.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
   }
   function clearChart(message = 'Choose a song to begin.') {
