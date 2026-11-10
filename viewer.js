@@ -68,7 +68,10 @@
       const mobilePlaying = window.matchMedia('(max-width: 600px)').matches && player.getState().playing;
       if (mobilePlaying && state.scrolledMeasure !== state.active) {
         state.scrolledMeasure = state.active;
-        measure.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        const bottomBar = document.querySelector('.sidebar')?.getBoundingClientRect().height || 0;
+        const visibleCenter = (window.innerHeight - bottomBar) / 2;
+        const rect = measure.getBoundingClientRect();
+        window.scrollTo({ top: window.scrollY + (rect.top + rect.bottom) / 2 - visibleCenter, behavior: 'smooth' });
       } else if (scroll && !mobilePlaying) measure.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
   }
