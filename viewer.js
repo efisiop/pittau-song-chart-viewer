@@ -3,7 +3,7 @@
   const $ = id => document.getElementById(id);
   const Views = window.ChartMusicianViews;
   const Rhythm = window.ChartRhythmNotation;
-  const state = { chart: null, view: 'vocal', theme: '2', active: 1, loading: 0, scrolledMeasure: null };
+  const state = { chart: null, view: 'vocal', theme: '2', transpose: 0, active: 1, loading: 0, scrolledMeasure: null };
   const spotifyByFile = new Map();
   async function updateSpotify(file) {
     const item = spotifyByFile.get(file);
@@ -40,6 +40,12 @@
     return element;
   };
   const number = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+  const notesSharp = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+  const notesFlat = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
+  const noteIndex = note => ({ C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[note[0].toUpperCase()] + (/[#♯]/.test(note[1] || '') ? 1 : /[b♭]/.test(note[1] || '') ? -1 : 0) + 12) % 12;
+  const transposeNote = note => (/[b♭]/.test(note) ? notesFlat : notesSharp)[(noteIndex(note) + state.transpose + 12) % 12];
+  const transposeChord = text => state.transpose ? String(text).replace(/(^|[\s(/|])([A-G](?:[#♯b♭])?)(?=(?:m|maj|dim|aug|sus|add|\d|[+°ø)]|\/|\s|$))/g, (_, prefix, note) => prefix + transposeNote(note)) : text;
+  const transposeKey = key => state.transpose ? String(key || '').replace(/^[A-G](?:[#♯b♭])?/, note => transposeNote(note)) : key;
   const validData = chart => chart && typeof chart === 'object' && !Array.isArray(chart) && Array.isArray(chart.sections) && chart.schemaVersion === 5;
   const meterBeats = chart => Math.max(1, Math.min(16, window.SongChartPractice.parseMeter(chart.meter)));
   const barCount = chart => chart.sections.reduce((sum, section) => sum + Math.max(0, number(section.bars, section.chords?.length || section.lyricEvents?.length || 0)), 0);
@@ -84,7 +90,7 @@
     $('chart').firstChild.append(node('h2', '', 'Your chart begins here'), node('p', '', 'Choose a song above to view its chart.'));
     $('message').textContent = message;
     document.body.classList.remove('loaded');
-    for (const id of ['play', 'reset', 'tempo', 'metronome', 'view', 'theme', 'print']) $(id).disabled = true;
+    for (const id of ['play', 'reset', 'tempo', 'metronome', 'view', 'theme', 'transpose', 'print']) $(id).disabled = true;
     showPosition({ measure: 1, beat: 1 });
   }
   function prepareChart(chart, description) {
@@ -93,6 +99,14 @@
     if (!count || count > 2000) throw new Error('The chart must contain between 1 and 2000 measures.');
     player.pause();
     state.chart = chart;
+    state.transpose = 0;
+    $('transpose').replaceChildren();
+    for (let semitones = -6; semitones <= 6; semitones++) {
+      const option = node('option', '', semitones === 0 ? 'Original key' : `${semitones > 0 ? '+' : ''}${semitones} semitones`);
+      option.value = String(semitones);
+      $('transpose').append(option);
+    }
+    $('transpose').value = '0';
     state.active = 1;
     state.view = Views.normalizeView(chart.layout?.musicianView || 'vocal');
     state.theme = ['1', '2', '4'].includes(String(chart.layout?.previewLineMode)) ? String(chart.layout.previewLineMode) : '2';
@@ -101,7 +115,7 @@
     $('tempo').value = window.SongChartPractice.parseTempo(chart.tempo);
     $('message').textContent = `${chart.artist || 'Unknown artist'} · ${chart.title || 'Untitled song'} · ${count} measures · ${description}`;
     document.body.classList.add('loaded');
-    for (const id of ['play', 'reset', 'tempo', 'metronome', 'view', 'theme', 'print']) $(id).disabled = false;
+    for (const id of ['play', 'reset', 'tempo', 'metronome', 'view', 'theme', 'transpose', 'print']) $(id).disabled = false;
     player.configure({ bpm: $('tempo').value, beatsPerMeasure: meterBeats(chart), totalMeasures: count });
     player.reset();
     updateInstruments();
@@ -215,8 +229,8 @@
     const chords = node('div', 'chords');
     if (viewHas('chords')) {
       const events = section.chordEvents?.[index];
-      if (Array.isArray(events) && events.length) positionedEvents(chords, events, beats, 'chord-event');
-      else chords.textContent = section.chords?.[index] || '—';
+      if (Array.isArray(events) && events.length) positionedEvents(chords, events.map(event => ({ ...event, text: transposeChord(event.text) })), beats, 'chord-event');
+      else chords.textContent = transposeChord(section.chords?.[index] || '—');
       measure.append(chords);
     }
     if (viewHas('lyrics')) {
@@ -248,7 +262,7 @@
     const title = node('div');
     title.append(node('h2', '', chart.title || 'Untitled song'), node('p', '', chart.artist || ''));
     const meta = node('div', 'meta');
-    meta.append(node('p', '', [chart.key, chart.meter, chart.tempo && `${chart.tempo} BPM`].filter(Boolean).join(' · ')), node('p', '', chart.version || ''));
+    meta.append(node('p', '', [transposeKey(chart.key), chart.meter, chart.tempo && `${chart.tempo} BPM`].filter(Boolean).join(' · ')), node('p', '', chart.version || ''));
     head.append(title, meta);
     page.append(head);
     const beats = Views.meterInfo(chart.meter).quarterBeats || 4;
@@ -313,6 +327,7 @@
   });
   $('view').addEventListener('change', () => { state.view = Views.normalizeView($('view').value); player.pause(); updateInstruments(); render(); });
   $('theme').addEventListener('change', () => { state.theme = $('theme').value; render(); });
+  $('transpose').addEventListener('change', () => { state.transpose = Number($('transpose').value); render(); });
   $('instrument').addEventListener('change', render);
   $('zoom').addEventListener('input', () => { $('chart').style.setProperty('--zoom', String(number($('zoom').value, 100) / 100)); $('zoomValue').textContent = `${$('zoom').value}%`; });
   $('play').addEventListener('click', () => player.getState().playing ? player.pause() : player.start());

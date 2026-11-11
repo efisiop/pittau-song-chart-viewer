@@ -21,6 +21,7 @@
     <div id="settingsPanel" class="settings-panel" hidden>
     <label>Output theme <select id="theme"><option value="2">Calm Grid</option><option value="1">Stage Large</option><option value="4">Four measures per row</option></select></label>
     <label>Musician view <select id="view"><option value="vocal">Vocal · lyrics</option><option value="pianoBacking">Backing Vocal 1 · lead cues</option><option value="piano">Piano · chords + lyrics</option><option value="instrumental">Instrumental · chords</option><option value="specialist">Specialist · chords + edited notation</option></select></label>
+    <label>Key change <select id="transpose" disabled><option value="0">Original key</option></select></label>
     <label id="instrumentWrap" hidden>Instrument <select id="instrument"><option value="">All instruments</option></select></label>
     <label>Zoom <input id="zoom" type="range" min="65" max="130" value="100"><output id="zoomValue">100%</output></label>
     <button id="print" type="button">Print / PDF</button>
@@ -46,6 +47,6 @@
   <script src="rhythm-notation.js"></script>
   <script src="musician-views.js"></script>
   <script src="practice-player.js"></script>
-  <script src="viewer.js?v=10"></script>
+  <script src="viewer.js?v=11"></script>
 </body>
 </html>
